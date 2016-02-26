@@ -20,6 +20,7 @@
 
 <body data-custom-load="true" data-name="iguana" data-tools="pnacl newlib glibc clang-newlib mac" data-configs="Debug Release"
 data-path="{tc}/{config}">
+
     <!-- <div class="jumbotron" style="height:100px;">
             <h> Status: <code id="statusField">NO-STATUS</code></h>
             <p>
@@ -100,9 +101,6 @@ data-path="{tc}/{config}">
                         </div>
                     </div>
                     <div class="col-xs-8 col-sm-9 col-md-10">
-
-                        
-
                         <div class="panel-group">
                             <div class="panel panel-default api-call-All">
                                 <div class="panel-heading">
@@ -371,72 +369,13 @@ data-path="{tc}/{config}">
                 </div>
             </div>
 
+              
 
             <div id="Debug_page" class="page">
-                <div class='panel panel-default'>
-                    <div class='panel-heading'>
-                        <h3><span>
-                            Encrypt/decrypt JSON
-                        </span></h3>
-                    </div>
-                    <div class='panel-body'>
-                        <div class="row">
-                            <div class="col-sm-8 col-md-8">
-                                <form class="form-horizontal">
-                                    <div class="form-group">
-                                        <label for="debug_passphrase" class="control-label col-sm-3 col-md-3">
-                                            Passphrase
-                                        </label>
-                                        <div class="col-sm-7 col-md-7">
-                                            <input type="text" class="form-control" id='debug_passphrase'>
-                                            <span class='material-input'></span>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="debug_permanentfile" class="control-label col-sm-3 col-md-3">
-                                            Permanentfile
-                                        </label>
-                                        <div class="col-sm-7 col-md-7">
-                                            <div>
-                                                <input type="file" id='debug_permanentfile'>
-                                                <input type="text" readonly class="form-control" >    
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="debug_json_src" class="control-label col-sm-3 col-md-3">
-                                            Json
-                                        </label>
-                                        <div class="col-sm-7 col-md-7">
-                                            <textarea name="" id="debug_json_src" cols="30" rows="5" class='form-control'></textarea>
-                                            <span class='material-input'></span>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <button class="btn btn-primary" id="debug_json_encrypt">
-                                            Encrypt JSON    
-                                        </button>
-                                        <button class="btn btn-primary" id="debug_json_decrypt">
-                                            Decrypt JSON    
-                                        </button>
-                                    </div>
-
-                                </form>
-                            </div>
-                            <div class="col-sm-4 col-md-4">
-                                <h5 class="uri-link">Response</h5>
-                                <pre class="hljs json coin_result" id="debug_json_result">JSON response</pre>
-                                <button class="btn btn-default clear-response">Clear response</button>
-                            </div>
-                        </div>
-                        
-                    </div>
-                </div>
-                
                 <div class="jumbotron">
                     <table>
                         <tr >
-                            <td><img src="" height="90" width="90" class="imagAPI" data-id="1" id="dest-imagAPI-1" /></td>
+                            <td><img src="" height="90" width="90" class="imagAPI" data-id="1" id="dest-imagAPI-1"  /></td>
                             <td><img src="" height="90" width="90" class="imagAPI" data-id="2" id="dest-imagAPI-2"/></td>
                             <td><img src="" height="90" width="90" class="imagAPI" data-id="3" id="dest-imagAPI-3" /></td>
                             <td><img src="" height="90" width="90" class="imagAPI" data-id="4" id="dest-imagAPI-4" /></td>
@@ -475,7 +414,7 @@ data-path="{tc}/{config}">
                             <td><img src="images/img2.jpg" height="90" width="90" id="src-imagAPI-10"  /></td>
                         </tr>
                                 <tr><td colspan="10">
-                            <span id="mousexy"></span>
+                            <span id="mousexy" name="mousexy_span"></span>
                             </td>
                         </tr>
                         
@@ -485,6 +424,24 @@ data-path="{tc}/{config}">
                 </div>
             </div>
 
+
+            <div id="Bitmap_page" class="page">
+               <div>
+                    <select id="pic-changer">
+                      <option value="none">None selected</option>
+                      <option value="img3.jpg" data-picture="images/img3.png">Image1</option>
+                    </select>
+                </div>
+                
+                <div id="image-location">
+                    
+                </div>
+                <div>
+                    <span id="bit_mousexy"></span>
+                </div>
+            </div>
+
+          
 
             <div id="Blockexplorer_page" class="page">
                 <div class="panel panel-default"> 
@@ -602,6 +559,7 @@ data-path="{tc}/{config}">
         <script type="text/javascript " src='js/peerlist.js'></script>
         <script type="text/javascript " src="js/methods.js "  charset="utf-8 "></script>
         
+        <script type="text/javascript " src="js/bitmap.js " ></script>
         <script type="text/javascript " src="js/imgAPI.js " ></script>
         <script type="text/javascript " src="js/pangea.js" ></script>
         <script type="text/javascript " src="js/blockexplorer.js" ></script>
@@ -610,7 +568,6 @@ data-path="{tc}/{config}">
         <script type="text/javascript " src="js/storage.js" ></script>
         <script type="text/javascript " src="js/jquery.tablesort.js" ></script>
         <script type="text/javascript " src="js/tradeintegration.js" ></script>
-        <script type="text/javascript " src="js/debugJson.js" ></script>
     </body>
 
 </html>

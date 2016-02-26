@@ -11,7 +11,7 @@ function tagGen(len)
 var SPNAPI = (function(SPNAPI, $, undefined) {
 
     SPNAPI.methods = {};
-    SPNAPI.pages = ["Settings","Tradebot","Instandex", "Pangea", "Peers","Debug", "Coins", "Blockexplorer"];
+    SPNAPI.pages = ["Settings","Bitmap","Tradebot","Instandex", "Pangea", "Peers","Debug", "Coins", "Blockexplorer"];
     SPNAPI.pageContent = {};
     SPNAPI.page = "Blockexplorer";
     /*
