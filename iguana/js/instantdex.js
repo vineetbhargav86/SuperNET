@@ -84,6 +84,8 @@ var setUeseridandAPIkeyPair=function(){
     
 };
 
+
+
 var setAPIkeyPair=function(){
     
     var exchange=$('#Instandex_exchange').val();
@@ -97,6 +99,205 @@ var setAPIkeyPair=function(){
         );
     
 };
+
+/**
+ * Api Key Pairs Saving
+ */
+
+
+// Helper object to manipulate with json and object data for apikeypairs
+var akpHelper = {
+    // populate apikey and apisecret to inputs
+    populateApiKeys: function(data) {
+        $('#Instandex_apikey').val(data.apikey);
+        $('#Instandex_apipassphrase').val(data.apisecret);
+    },
+    prepareToSave: function(prev) {
+
+        var exchange = $('#Instandex_exchange').val();
+            ret = {},
+            apikey = $('#Instandex_apikey').val(),    
+            apisecret = $('#Instandex_apipassphrase').val();
+
+        ret[exchange] = true;
+        ret[exchange + '_apikey'] = apikey;
+        ret[exchange + '_apisecret'] = apisecret;
+        
+        if(prev) {
+            $.extend(prev, ret);
+            return prev;
+        };
+
+        return ret;
+    },
+    isSaved: function(contents) {
+        var exchange = $('#Instandex_exchange').val();
+
+        // TODO checking is contents json or object
+        if(contents && (contents[exchange] === true || contents[exchange] === 'true') ) {
+            return {
+                exchange: exchange,
+                apikey: contents[exchange + '_apikey'],
+                apisecret: contents[exchange + '_apisecret']
+            };
+        } else 
+            return false;
+    },
+    // deletes from existing jsonObj apikeypair for exchange
+    deleteCurrent: function(jsonObj) {
+        var exchange = $('#Instandex_exchange').val();
+
+        jsonObj[exchange] = false;
+        delete jsonObj[exchange + '_apikey'];
+        delete jsonObj[exchange + '_apisecret'];
+
+        return jsonObj;
+    }     
+};
+
+//Show modal and send entered data to cb
+var apiKeyPairPassphraseModal = function(cb) {
+    var passphrase = $("#apiKeyJsonPassphrase"),
+        permanentfile = $("#apiKeyJsonFile"),
+        modal = $("#apiKeyPairsPassphraseModal");
+        
+    modal.modal('toggle');
+    
+    modal.one("click", "#btnSaveApiKeyJsonPassphrase", function(e) {
+        e.preventDefault();
+
+        if(passphrase.val()) {
+            cb({
+                passphrase: passphrase.val(),
+                permanentfile: permanentfile.val()
+            });
+            modal.modal('toggle');
+            passphrase.val('');
+            permanentfile.val('');
+
+        } else cb(false);
+    });
+};
+
+
+// Do all checks about how apikey was stored
+//
+// find in file confs/instantdex.exchange.api
+// if exists - populate to fields
+// if no - ask passphrase and decrypt json
+// check here - if data saved - populate
+var getAPIkeyPairs = function() {
+    var exchange = $('#Instandex_exchange').val();
+
+    // use function from debugJson
+    readJsonEncryptedFile('confs/instantdex.exchange.api', function(file) {
+        
+        var apiKeysObj = dJson._checkJson(file),
+            savedJson = akpHelper.isSaved(apiKeysObj);
+        
+        // if unsecure saved apikey
+        if(savedJson) {
+            akpHelper.populateApiKeys(savedJson);
+
+        // else get from json    
+        } else {
+            // clear form
+            akpHelper.populateApiKeys({apikey: '', apisecret: ''});
+
+            apiKeyPairPassphraseModal(function(creds) {
+                if(creds) {
+                    dJson.decrypt(creds, function(json) {
+                        apiKeysObj = dJson._checkJson(json);
+                        console.log(apiKeysObj);
+                        savedJson = akpHelper.isSaved(apiKeysObj);
+                        console.log('saved json', savedJson);
+                        if(savedJson)
+                            // populate real values
+                            akpHelper.populateApiKeys(savedJson);
+                    });
+                };
+            });
+        };
+    });
+};
+
+// Just wrapper for on change event and also gets data when first time 
+// stay on apikeypairs tab
+var monitExchangesValue = function() {
+    getAPIkeyPairs();
+    $('#Instandex_exchange').on("change", function() {
+        getAPIkeyPairs();
+    });
+};
+
+// Read from file, extend contents with new value and save to file
+// file name - confs/instantdex.exchange.api for all unsecure savings
+var saveAPIKeyPairFile = function() {
+    readJsonEncryptedFile('confs/instantdex.exchange.api', function(file) {
+        var json = dJson._checkJson(file);
+
+        json = akpHelper.prepareToSave(json); 
+        json = JSON.stringify(json);
+        save_contents(json, "confs/instantdex.exchange.api");
+        show_resposnse('{"result": "saved to file(unsecure)"}');
+    });
+};
+
+// Asks passphrase(optionaly permanentfile name for native)
+// check if already saved in confs/instantdex.exchange.api
+// if saved, deletes data and updates confs/instantdex.exchange.api
+// adds to existing decrypted json new data
+// and encrypts json for securely storing apikeys
+var saveAPIKeyPairJson = function() {
+    apiKeyPairPassphraseModal(function(credentials) {
+        console.warn(credentials);
+        if(credentials) {
+            dJson.decrypt(credentials, function(json) {
+                var json = dJson._checkJson(json);
+                    
+                json = akpHelper.prepareToSave(json);
+                json = JSON.stringify(json);
+
+                dJson.encrypt(credentials, json, encryptCallback);
+            });
+            
+        };
+    });
+
+    // Update unsecure file
+    function encryptCallback() {
+        // delete from file, as we have encrypted apikeys
+        readJsonEncryptedFile('confs/instantdex.exchange.api', function(file) {
+
+        var apiKeysObj = dJson._checkJson(file),
+            savedJson = akpHelper.isSaved(apiKeysObj);
+
+            if(savedJson) {
+                var newJson = akpHelper.deleteCurrent(apiKeysObj);
+    
+                newJson = JSON.stringify(newJson);
+                // before rewriting we need to remove file, as content
+                // will not as expected  
+                fileSystem.root.getFile(
+                    'confs/instantdex.exchange.api',
+                     {create: false},
+                     function(fileEntry) {
+                        fileEntry.remove(function() {
+                            console.log(name+' removed.');
+                            save_contents(
+                                newJson, 
+                                "confs/instantdex.exchange.api"
+                            );
+                            show_resposnse('{"result":"saved with encrypt json"}');
+
+                        }, errorHandler);
+                     }, errorHandler
+                );
+            };
+        });
+    };
+};
+
 
 /*
  * 
@@ -353,13 +554,25 @@ var html='<tr><td align="center" > UserID:</td><td align="center" ><input type="
 };
 
 var set_apikeypass_table=function (){
-var html='<tr><td align="center" > Apikey:</td><td align="center" ><input size="40" type="text" id="Instandex_apikey"/></td></tr><tr><td align="center" > Passphrase:</td><td align="center" ><input size="40" type="text" id="Instandex_apipassphrase"/></td></tr><tr><td align="center" >  Exchange:</td><td align="center" ><select name="Instandex_exchange" id="Instandex_exchange"></select></td></tr><tr><td colspan="2" align="center">  <button class="btn btn-primary instantdex_set_keypair" >Set keypair</button></td></tr>';
+var html='<tr><td align="center" > Apikey:</td><td align="center" ><input size="60" type="text" id="Instandex_apikey"/></td></tr><tr><td align="center" > Passphrase:</td><td align="center" ><input size="60" type="text" id="Instandex_apipassphrase"/></td></tr><tr><td align="center" >  Exchange:</td><td align="center" ><select name="Instandex_exchange" id="Instandex_exchange"></select></td></tr><tr><td colspan="2" align="center">  <button class="btn btn-primary instantdex_save_keypair_file" >Save unsecure</button> <button class="btn btn-primary instantdex_save_keypair_json" >Save secure</button><button class="btn btn-primary instantdex_set_keypair" >Set keypair</button> <button id="debugReadApiKeyFile">show file</button><button id="debugClearApiKeyFile">clear file</td></tr>';
     $('#Instandex_form_table').html(html);
     if(exchanges!==""){
     $('#Instandex_exchange').html(exchanges);
         if(SPNAPI.settings.prefferedExchange!==""){
             
     changePrefferedEx("Instandex_exchange");}
+    monitExchangesValue();
+
+
+    // this just for debugging
+    $("#debugReadApiKeyFile").on("click", function() {
+        readJsonEncryptedFile('confs/instantdex.exchange.api', function(file) {
+            console.log('confs/instantdex.exchange.api', file);
+        });
+    });
+    $("#debugClearApiKeyFile").on("click", function() {
+        delete_file('confs/instantdex.exchange.api');
+    });
 }
 };
 
