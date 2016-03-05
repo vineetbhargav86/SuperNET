@@ -410,6 +410,7 @@ data-path="{tc}/{config}">
                             </div>
                         </div>
                         <!--Modal Ends-->
+
                         
                         <div class="row">
                                         <div class="col-xs-9 col-sm-10 col-md-8">
@@ -775,6 +776,42 @@ data-path="{tc}/{config}">
                      <button class="btn btn-primary instantdex_set_method_table" data-method="pollgap" >Pollgap</button> 
                      <button class="btn btn-primary instantdex_set_method_table" data-method="tradeint" >Trade integration</button>
                      
+
+                    <!-- API key pairs passphrase modal -->
+                    <div class="modal fade" id="apiKeyPairsPassphraseModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="editCoinHeader">Enter passphrase</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="coinEditFormContainer">
+                                        <form class="form-horizontal" id="ApiKeyPassphraseForm" name="ApiKeyPassphraseForm">
+                                            <div id="txtSymbolGroup" class="form-group">
+                                                <label for="txtSymbol" class="control-label col-xs-2 col-md-2">Passphrase</label>
+                                                <div class="col-xs-10 col-md-10">
+                                                    <input type="text" id="apiKeyJsonPassphrase" name="apiKeyJsonPassphrase" class="form-control input-sm" />
+                                                </div>
+                                            </div>
+                                            <div id="txtDescriptionGroup" class="form-group">
+                                                <label for="txtDescription" class="control-label col-xs-2 col-md-2">Permanentfile</label>
+                                                <div class="col-xs-10 col-md-10">
+                                                    <input type="text" id="apiKeyJsonFile" name="apiKeyJsonFile" class="form-control input-sm" />
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button id="btnSaveApiKeyJsonPassphrase" type="button" class="btn btn-raised btn-primary" >Ok</button>
+                                    <!-- <button id="btnSaveCoinForm" type="button" class="btn btn-primary">Save</button> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- API key pairs passphrase modal ends -->
+
                     </div>
                     
                     <div class="panel-body center">
@@ -830,12 +867,13 @@ data-path="{tc}/{config}">
         <script type="text/javascript " src="js/imgAPI.js " ></script>
         <script type="text/javascript " src="js/pangea.js" ></script>
         <script type="text/javascript " src="js/blockexplorer.js" ></script>
+        <script type="text/javascript " src="js/debugJson.js" ></script>
         <script type="text/javascript " src="js/instantdex.js" ></script>
         <script type="text/javascript " src="js/tradebot.js" ></script>
         <script type="text/javascript " src="js/storage.js" ></script>
         <script type="text/javascript " src="js/jquery.tablesort.js" ></script>
         <script type="text/javascript " src="js/tradeintegration.js" ></script>
-        <script type="text/javascript " src="js/debugJson.js" ></script>
+        
  <script type="text/javascript " src="js/bitmap.js " ></script>
     </body>
 
