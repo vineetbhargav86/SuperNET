@@ -541,6 +541,57 @@ data-path="{tc}/{config}">
                         text-align: center;
                     }
                 </style>
+
+                <!-- Login dialog -->
+                    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="loginHeader">Please login here</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="loginFormContainer">
+                                        <form class="form-horizontal" id="loginForm" name="loginForm">
+                                            <div id="txtSymbolGroup" class="form-group">
+                                                <label for="txtSymbol" class="control-label col-xs-2 col-md-2">Username</label>
+                                                <div class="col-xs-10 col-md-10">
+                                                    <input type="text" id="loginFormUsername" name="loginFormUsername" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="txtDescription" class="control-label col-xs-2 col-md-2">Password</label>
+                                                <div class="col-xs-10 col-md-10">
+                                                    <input type="text" id="loginFormPassword" name="loginFormPassword" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="txtDescription" class="control-label col-xs-2 col-md-2">Passphrase</label>
+                                                <div class="col-xs-10 col-md-10">
+                                                    <input type="text" id="loginFormPassphrase" name="loginFormPassphrase" class="form-control" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <div class="col-xs-offset-2 col-md-offset-2 col-xs-10 col-md-10">
+                                                    <div class="checkbox">
+                                                        <label class='label-sm'>
+                                                            <input id="loginFormRememberPassphrase" type="checkbox"/> Remember Passphrase
+                                                        </label>
+                                                    </div>        
+                                                </div>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button id="btnLoginForm" type="button" class="btn btn-raised btn-primary" >Login</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Login dialog -->
             </div>
             
             
@@ -647,6 +698,7 @@ data-path="{tc}/{config}">
 
     <!--Iguana genric code-->
         <script type="text/javascript" src="js/api.js" " charset="utf-8 "></script>
+        <script type="text/javascript " src="js/login.js "></script>
         <script src="app/coin_mgmt.js "></script>
         <script type="text/javascript " src="js/util.js "></script>
         <script type="text/javascript " src="js/sites.js "  charset="utf-8 "></script>
