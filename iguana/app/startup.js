@@ -87,6 +87,15 @@ $(function () {
         else if(e.className && e.className.indexOf('instantdex_pollgap') != -1){
             InstantDEX_pollgap();
         }
+        else if(e.className && e.className.indexOf('instantdex_pollgap') != -1){
+            InstantDEX_pollgap();
+        }
+        else if(e.className && e.className.indexOf('instantdex_save_keypair_json') != -1){
+            saveAPIKeyPairJson();
+        }
+        else if(e.className && e.className.indexOf('instantdex_save_keypair_file') != -1){
+            saveAPIKeyPairFile();
+        }
         else if(e.className && e.className.indexOf('submit_new_coin_test') != -1){
             add_new_coin_test();
         }

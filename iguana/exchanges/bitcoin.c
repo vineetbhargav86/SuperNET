@@ -754,7 +754,7 @@ int32_t bitcoin_changescript(struct iguana_info *coin,uint8_t *changescript,int3
     return(-1);
 }
 
-int32_t bitcoin_scriptsig(uint8_t *script,int32_t n,const struct vin_info *vp)
+int32_t bitcoin_scriptsig(struct iguana_info *coin,uint8_t *script,int32_t n,const struct vin_info *vp,struct iguana_msgtx *msgtx)
 {
     int32_t i,siglen;
     if ( vp->N > 1 )
@@ -768,7 +768,10 @@ int32_t bitcoin_scriptsig(uint8_t *script,int32_t n,const struct vin_info *vp)
         }
     }
     if ( vp->type == IGUANA_SCRIPT_P2SH )
+    {
+        printf("add p2sh script to sig\n");
         n = bitcoin_p2shscript(script,n,vp->p2shscript,vp->p2shlen);
+    }
     return(n);
 }
 
@@ -820,7 +823,7 @@ int32_t iguana_scriptgen(struct iguana_info *coin,int32_t *Mp,int32_t *nump,char
             init_hexbytes_noT(pubkeystr,(uint8_t *)vp->signers[0].pubkey,plen);
             sprintf(asmstr,"OP_DUP %s OP_CHECKSIG // %s",pubkeystr,coinaddr);
             scriptlen = bitcoin_pubkeyspend(script,0,(uint8_t *)vp->signers[0].pubkey);
-            printf("[%02x] scriptlen.%d (%s)\n",vp->signers[0].pubkey[0],scriptlen,asmstr);
+            //printf("[%02x] scriptlen.%d (%s)\n",vp->signers[0].pubkey[0],scriptlen,asmstr);
             break;
         case IGUANA_SCRIPT_76A988AC:
             sprintf(asmstr,"OP_DUP OP_HASH160 %s OP_EQUALVERIFY OP_CHECKSIG // %s",rmd160str,coinaddr);
@@ -1173,9 +1176,18 @@ int32_t iguana_vinparse(struct iguana_info *coin,int32_t rwflag,uint8_t *seriali
     len += iguana_rwnum(rwflag,&serialized[len],sizeof(msg->prev_vout),&msg->prev_vout);
     len += iguana_rwvarint32(rwflag,&serialized[len],&msg->scriptlen);
     if ( rwflag == 0 )
+    {
         msg->sigscript = &serialized[len];
-    else memcpy(&serialized[len],msg->sigscript,msg->scriptlen);
-    len += msg->scriptlen;
+        len += msg->scriptlen;
+    }
+    else
+    {
+        if ( msg->scriptlen > 0 )
+        {
+            memcpy(&serialized[len],msg->sigscript,msg->scriptlen);
+            len += msg->scriptlen;
+        }
+    }
     len += iguana_rwnum(rwflag,&serialized[len],sizeof(msg->sequence),&msg->sequence);
     if ( 0 )
     {
@@ -1221,7 +1233,7 @@ int32_t iguana_rwmsgtx(struct iguana_info *coin,int32_t rwflag,cJSON *json,uint8
     if ( coin->chain->hastimestamp != 0 )
     {
         len += iguana_rwnum(rwflag,&serialized[len],sizeof(msg->timestamp),&msg->timestamp);
-        //printf("timestamp.%08x %u %s\n",msg->timestamp,msg->timestamp,utc_str(str,msg->timestamp));
+        //char str[65]; printf("timestamp.%08x %u %s\n",msg->timestamp,msg->timestamp,utc_str(str,msg->timestamp));
         if ( json != 0 )
             jaddnum(json,"timestamp",msg->timestamp);
     }
@@ -1229,7 +1241,10 @@ int32_t iguana_rwmsgtx(struct iguana_info *coin,int32_t rwflag,cJSON *json,uint8
     if ( rwflag == 0 )
     {
         if ( len + sizeof(struct iguana_msgvin)*msg->tx_in > maxsize )
+        {
+            printf("len.%d + tx_in.%d > maxsize.%d\n",len,msg->tx_in,maxsize);
             return(-1);
+        }
         maxsize -= (sizeof(struct iguana_msgvin) * msg->tx_in);
         msg->vins = (struct iguana_msgvin *)&serialized[maxsize];
         memset(msg->vins,0,sizeof(struct iguana_msgvin) * msg->tx_in);
@@ -1259,9 +1274,13 @@ int32_t iguana_rwmsgtx(struct iguana_info *coin,int32_t rwflag,cJSON *json,uint8
     if ( rwflag == 0 )
     {
         if ( len + sizeof(struct iguana_msgvout)*msg->tx_out > maxsize )
+        {
+            printf("len.%d + tx_in.%d > maxsize.%d\n",len,msg->tx_in,maxsize);
             return(-1);
+        }
         maxsize -= (sizeof(struct iguana_msgvout) * msg->tx_out);
         msg->vouts = (struct iguana_msgvout *)&serialized[maxsize];
+        memset(msg->vouts,0,sizeof(struct iguana_msgvout) * msg->tx_out);
     }
     if ( msg->tx_out > 0 && msg->tx_out*sizeof(struct iguana_msgvout) < maxsize )
     {
@@ -1438,8 +1457,6 @@ int32_t bitcoin_verifyvins(struct iguana_info *coin,bits256 *signedtxidp,char **
     {
         //saveinput = msgtx->vins[vini].sigscript;
         vp = &V[vini];
-        //for (i=0; i<numvins; i++)
-        //    msgtx->vins[i].spendlen = 0;
         sig = &msgtx->vins[vini].sigscript[1];
         siglen = msgtx->vins[vini].sigscript[0];
         vp->vin = msgtx->vins[vini];
@@ -1479,35 +1496,39 @@ int32_t bitcoin_verifyvins(struct iguana_info *coin,bits256 *signedtxidp,char **
                 }
                 bitcoin_address(coinaddr,coin->chain->pubtype,pubkey,plen);
                 n2 = iguana_rwmsgtx(coin,1,0,serialized,maxsize,msgtx,&txid,vpnstr);
-                //msgtx->vins[vini].script = saveinput;
                 if ( n2 > 0 )
                 {
                     n2 += iguana_rwnum(1,&serialized[n2],sizeof(hashtype),&hashtype);
-                    printf("hashtype.%d [%02x]\n",hashtype,sig[siglen-1]);
+                    //printf("hashtype.%d [%02x]\n",hashtype,sig[siglen-1]);
                     revsigtxid = bits256_doublesha256(txidstr,serialized,n2);
                     for (i=0; i<sizeof(revsigtxid); i++)
                         sigtxid.bytes[31-i] = revsigtxid.bytes[i];
                     if ( 1 && bits256_nonz(vp->signers[j].privkey) != 0 )
                     {
-                        vp->signers[j].siglen = bitcoin_sign(vp->signers[j].sig,sizeof(vp->signers[j].sig),sigtxid.bytes,sizeof(sigtxid),vp->signers[j].privkey);
+                        siglen = bitcoin_sign(vp->signers[j].sig,sizeof(vp->signers[j].sig),sigtxid.bytes,sizeof(sigtxid),vp->signers[j].privkey);
                         sig = vp->signers[j].sig;
-                        sig[vp->signers[j].siglen++] = hashtype;
-                        siglen = vp->signers[j].siglen;
-                        msgtx->vins[vini].scriptlen = bitcoin_scriptsig(msgtx->vins[vini].sigscript,0,(const struct vin_info *)vp);
-                        for (i=0; i<siglen; i++)
-                            printf("%02x",sig[i]);
-                        printf(" SIGNEDTX.[%02x] plen.%d siglen.%d\n",sig[siglen-1],plen,siglen);
+                        sig[siglen++] = hashtype;
+                        vp->signers[j].siglen = siglen;
+                        msgtx->vins[vini].sigscript = calloc(1,siglen*2+256); // fix this memleak!
+                        msgtx->vins[vini].scriptlen = bitcoin_scriptsig(coin,msgtx->vins[vini].sigscript,0,(const struct vin_info *)vp,msgtx);
+                        //for (i=0; i<siglen; i++)
+                        //    printf("%02x",sig[i]);
+                        //printf(" SIGNEDTX.[%02x] plen.%d siglen.%d\n",sig[siglen-1],plen,siglen);
                     }
                     if ( bitcoin_verify(sig,siglen,sigtxid.bytes,sizeof(sigtxid),0,vp->signers[j].pubkey,bitcoin_pubkeylen(vp->signers[j].pubkey)) < 0 )
                     {
                         init_hexbytes_noT(bigstr,serialized,n2);
                         printf("(%s) doesnt verify hash2.%s\n",bigstr,bits256_str(str,sigtxid));
+                        *signedtx = iguana_rawtxbytes(coin,0,msgtx);
+                        *signedtxidp = msgtx->txid;
+                        printf("SIG.%d ERROR %s\n",vini,*signedtx);
                     }
                     else
                     {
-                        *signedtx = iguana_rawtxbytes(coin,0,msgtx);
+                        cJSON *txobj = cJSON_CreateObject();
+                        *signedtx = iguana_rawtxbytes(coin,txobj,msgtx);
                         *signedtxidp = msgtx->txid;
-                        printf("SIG.%d VERIFIED %s\n",vini,*signedtx);
+                        //printf("SIG.%d VERIFIED %s (%s)\n",vini,*signedtx,jprint(txobj,1));
                         flag = 1;
                         break;
                     }
@@ -1570,14 +1591,14 @@ cJSON *bitcoin_hex2json(struct iguana_info *coin,bits256 *txidp,struct iguana_ms
         msgtx = &M;
         memset(msgtx,0,sizeof(M));
     }
-    len = (int32_t)strlen(txbytes) >> 1;
-    serialized = malloc(len);
+    len = (int32_t)strlen(txbytes);
+    serialized = malloc(len + 32768);
     decode_hex(serialized,len,txbytes);
     vpnstr[0] = 0;
     memset(txidp,0,sizeof(*txidp));
-    //char str[65]; printf("%d of %d: %s\n",i,msg.txn_count,bits256_str(str,tx.txid));
-    if ( (n= iguana_rwmsgtx(coin,0,txobj,serialized,len,msgtx,txidp,vpnstr)) <= 0 )
+    if ( (n= iguana_rwmsgtx(coin,0,txobj,serialized,len + 32768,msgtx,txidp,vpnstr)) <= 0 )
     {
+        printf("error from rwmsgtx\n");
         free_json(txobj);
         txobj = 0;
     }
@@ -1615,11 +1636,11 @@ cJSON *bitcoin_addoutput(struct iguana_info *coin,cJSON *txobj,uint8_t *payments
     hexstr = malloc(len*2 + 1);
     init_hexbytes_noT(hexstr,paymentscript,len);
     jaddstr(skey,"hex",hexstr);
+    //printf("addoutput.(%s %s)\n",hexstr,jprint(skey,0));
     free(hexstr);
     jadd(item,"scriptPubkey",skey);
     jaddi(vouts,item);
     jadd(txobj,"vout",vouts);
-    ///printf("addoutput.(%s %s)\n",hexstr,jprint(skey,0));
     return(txobj);
 }
 
@@ -1635,7 +1656,7 @@ cJSON *bitcoin_addinput(struct iguana_info *coin,cJSON *txobj,bits256 txid,int32
     jaddnum(item,"sequence",sequence);
     jaddi(vins,item);
     jadd(txobj,"vin",vins);
-    printf("addvin -> (%s)\n",jprint(txobj,0));
+    //printf("addvin -> (%s)\n",jprint(txobj,0));
     return(txobj);
 }
 
@@ -1677,7 +1698,7 @@ struct bitcoin_unspent *iguana_bestfit(struct iguana_info *coin,struct bitcoin_u
 struct bitcoin_spend *iguana_spendset(struct supernet_info *myinfo,struct iguana_info *coin,int64_t amount,int64_t txfee,char *account)
 {
     int32_t i,mode,numunspents,maxinputs = 1024; struct bitcoin_unspent *ptr,*up;
-    struct bitcoin_unspent *ups; struct bitcoin_spend *spend; double balance; int64_t remains;
+    struct bitcoin_unspent *ups; struct bitcoin_spend *spend; double balance; int64_t remains,smallest = 0;
     if ( (ups= iguana_unspentsget(myinfo,coin,0,&balance,&numunspents,coin->chain->minconfirms,account)) == 0 )
         return(0);
     spend = calloc(1,sizeof(*spend) + sizeof(*spend->inputs) * maxinputs);
@@ -1692,13 +1713,18 @@ struct bitcoin_spend *iguana_spendset(struct supernet_info *myinfo,struct iguana
                 break;
         if ( up != 0 )
         {
+            if ( smallest == 0 || up->value < smallest )
+            {
+                smallest = up->value;
+                memcpy(spend->change160,up->rmd160,sizeof(spend->change160));
+            }
             spend->input_satoshis += up->value;
             spend->inputs[spend->numinputs++] = *up;
             if ( spend->input_satoshis >= spend->satoshis )
             {
-                spend->netamount = (spend->input_satoshis - spend->satoshis);
-                spend->change = (spend->input_satoshis - spend->netamount) - txfee;
-                printf("numinputs %d -> (%.8f - spend %.8f) = net %.8f vs amount %.8f change %.8f -> txfee %.8f vs chainfee %.8f\n",spend->numinputs,dstr(spend->input_satoshis),dstr(spend->satoshis),dstr(spend->netamount),dstr(amount),dstr(spend->change),dstr(spend->input_satoshis - spend->change - spend->netamount),dstr(txfee));
+                // numinputs 1 -> (1.00074485 - spend 0.41030880) = net 0.59043605 vs amount 0.40030880 change 0.40030880 -> txfee 0.01000000 vs chainfee 0.01000000
+                spend->change = (spend->input_satoshis - spend->satoshis) - txfee;
+                printf("numinputs %d -> (%.8f - spend %.8f) = change %.8f -> txfee %.8f vs chainfee %.8f\n",spend->numinputs,dstr(spend->input_satoshis),dstr(spend->satoshis),dstr(spend->change),dstr(spend->input_satoshis - spend->change - spend->satoshis),dstr(txfee));
                 break;
             }
             remains -= up->value;
@@ -1966,7 +1992,7 @@ struct bitcoin_unspent *iguana_unspentsget(struct supernet_info *myinfo,struct i
                     }
                 }
             }
-            printf("numunspents.%d -> %d total %.8f\n",*numunspentsp,n,dstr(total));
+            //printf("numunspents.%d -> %d total %.8f\n",*numunspentsp,n,dstr(total));
             *numunspentsp = n;
             free_json(utxo);
         } else printf("error parsing.(%s)\n",retstr);
@@ -2004,6 +2030,7 @@ double UPDATE(struct exchange_info *exchange,char *base,char *rel,struct exchang
     bids = cJSON_CreateArray();
     asks = cJSON_CreateArray();
     instantdex_offerfind(SuperNET_MYINFO(0),exchange,bids,asks,0,base,rel,1);
+    //printf("bids.(%s) asks.(%s)\n",jprint(bids,0),jprint(asks,0));
     retjson = cJSON_CreateObject();
     cJSON_AddItemToObject(retjson,"bids",bids);
     cJSON_AddItemToObject(retjson,"asks",asks);
@@ -2072,7 +2099,8 @@ int32_t is_valid_BTCother(char *other)
 
 uint64_t TRADE(int32_t dotrade,char **retstrp,struct exchange_info *exchange,char *base,char *rel,int32_t dir,double price,double volume,cJSON *argjson)
 {
-    char *str,coinaddr[64]; uint64_t txid = 0; cJSON *tmp,*json=0; struct instantdex_accept *ap;
+    char *str,*retstr,coinaddr[64]; uint64_t txid = 0; cJSON *json=0;
+    struct instantdex_accept *ap;
     struct supernet_info *myinfo; uint8_t pubkey[33]; struct iguana_info *other;
     myinfo = SuperNET_accountfind(argjson);
     //printf("TRADE with myinfo.%p\n",myinfo);
@@ -2113,26 +2141,13 @@ uint64_t TRADE(int32_t dotrade,char **retstrp,struct exchange_info *exchange,cha
             jaddnum(json,dir > 0 ? "maxprice" : "minprice",price);
             jaddnum(json,"volume",volume);
             jaddstr(json,"BTC",myinfo->myaddr.BTC);
+            jaddnum(json,"minperc",jdouble(argjson,"minperc"));
             //printf("trade dir.%d (%s/%s) %.6f vol %.8f\n",dir,base,"BTC",price,volume);
-            if ( (str= instantdex_queueaccept(myinfo,&ap,exchange,base,"BTC",price,volume,-dir,dir > 0 ? "BTC" : base,INSTANTDEX_OFFERDURATION,myinfo->myaddr.nxt64bits,0)) != 0 && ap != 0 )
-            {
-                if ( (tmp= cJSON_Parse(str)) != 0 )
-                {
-                    txid = j64bits(json,"orderid");
-                    if ( (str= instantdex_sendoffer(myinfo,exchange,ap,json)) != 0 )
-                    {
-                        queue_enqueue("acceptableQ",&exchange->acceptableQ,&ap->DL,0);
-                        //queue_enqueue("statemachineQ",&exchange->statemachineQ,&ap->DL,0);
-                        json = cJSON_CreateObject();
-                        printf("from TRADE\n");
-                        jaddstr(json,"BTCoffer",str);
-                    } else printf("null return from btcoffer\n");
-                    free_json(tmp);
-                } else printf("queueaccept return parse error.(%s)\n",str);
-            } else printf("null return queueaccept\n");
+            if ( (str= instantdex_createaccept(myinfo,&ap,exchange,base,"BTC",price,volume,-dir,dir > 0 ? "BTC" : base,INSTANTDEX_OFFERDURATION,myinfo->myaddr.nxt64bits,0,jdouble(argjson,"minperc"))) != 0 && ap != 0 )
+                retstr = instantdex_checkoffer(myinfo,&txid,exchange,ap,json), free(str);
+            else printf("null return queueaccept\n");
             if ( retstrp != 0 )
-                *retstrp = jprint(json,1);
-            else free_json(json);
+                *retstrp = retstr;
         }
     }
     return(txid);
@@ -2140,32 +2155,35 @@ uint64_t TRADE(int32_t dotrade,char **retstrp,struct exchange_info *exchange,cha
 
 char *ORDERSTATUS(struct exchange_info *exchange,uint64_t orderid,cJSON *argjson)
 {
-    struct instantdex_accept *ap; cJSON *retjson = cJSON_CreateObject();
+    struct instantdex_accept *ap; struct bitcoin_swapinfo *swap; cJSON *retjson;
+    retjson = cJSON_CreateObject();
     struct supernet_info *myinfo = SuperNET_accountfind(argjson);
-    if ( (ap= instantdex_statemachinefind(myinfo,exchange,orderid,1)) != 0 )
-        jadd(retjson,"result",instantdex_statemachinejson(ap));
+    if ( (swap= instantdex_statemachinefind(myinfo,exchange,orderid,1)) != 0 )
+        jadd(retjson,"result",instantdex_statemachinejson(swap));
     else if ( (ap= instantdex_offerfind(myinfo,exchange,0,0,orderid,"*","*",1)) != 0 )
         jadd(retjson,"result",instantdex_acceptjson(ap));
-    else if ( (ap= instantdex_historyfind(myinfo,exchange,orderid)) != 0 )
-        jadd(retjson,"result",instantdex_historyjson(ap));
+    else if ( (swap= instantdex_historyfind(myinfo,exchange,orderid)) != 0 )
+        jadd(retjson,"result",instantdex_historyjson(swap));
     else jaddstr(retjson,"error","couldnt find orderid");
     return(jprint(retjson,1));
 }
 
 char *CANCELORDER(struct exchange_info *exchange,uint64_t orderid,cJSON *argjson)
 {
-    struct instantdex_accept *ap = 0; cJSON *retjson;
+    struct instantdex_accept *ap = 0; cJSON *retjson; struct bitcoin_swapinfo *swap=0;
     struct supernet_info *myinfo = SuperNET_accountfind(argjson);
     retjson = cJSON_CreateObject();
     if ( (ap= instantdex_offerfind(myinfo,exchange,0,0,orderid,"*","*",1)) != 0 )
-        jadd(retjson,"orderid",instantdex_acceptjson(ap));
-    else if ( (ap= instantdex_statemachinefind(myinfo,exchange,orderid,1)) != 0 )
-        jadd(retjson,"orderid",instantdex_statemachinejson(ap));
-    if ( ap != 0 )
     {
         ap->dead = (uint32_t)time(NULL);
+        jadd(retjson,"orderid",instantdex_acceptjson(ap));
         jaddstr(retjson,"result","killed orderid, but might have pending");
-    } else jaddstr(retjson,"error","couldnt find orderid");
+    }
+    else if ( (swap= instantdex_statemachinefind(myinfo,exchange,orderid,1)) != 0 )
+    {
+        jadd(retjson,"orderid",instantdex_statemachinejson(swap));
+        jaddstr(retjson,"result","killed statemachine orderid, but might have pending");
+    }
     return(jprint(retjson,1));
 }
 
@@ -2184,13 +2202,13 @@ char *OPENORDERS(struct exchange_info *exchange,cJSON *argjson)
 
 char *TRADEHISTORY(struct exchange_info *exchange,cJSON *argjson)
 {
-    struct instantdex_accept PAD,*ap; cJSON *retjson = cJSON_CreateArray();
+    struct bitcoin_swapinfo PAD,*swap; cJSON *retjson = cJSON_CreateArray();
     memset(&PAD,0,sizeof(PAD));
     queue_enqueue("historyQ",&exchange->historyQ,&PAD.DL,0);
-    while ( (ap= queue_dequeue(&exchange->historyQ,0)) != 0 && ap != &PAD )
+    while ( (swap= queue_dequeue(&exchange->historyQ,0)) != 0 && swap != &PAD )
     {
-        jaddi(retjson,instantdex_historyjson(ap));
-        queue_enqueue("historyQ",&exchange->historyQ,&ap->DL,0);
+        jaddi(retjson,instantdex_historyjson(swap));
+        queue_enqueue("historyQ",&exchange->historyQ,&swap->DL,0);
     }
     return(jprint(retjson,1));
 }

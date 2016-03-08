@@ -152,7 +152,7 @@ var SPNAPI = (function(SPNAPI, $, undefined) {
     };
     
     SPNAPI.useGETRequest=function(request){
-        if(request.method && (request.method==='apikeypair' || request.method==='setuserid')){
+        if(request.method && (request.method==='apikeypair' || request.method==='setuserid' ||  request.method==='encryptjson' || request.method==='decryptjson')){
             return false;
         }else{
             return true;
@@ -191,11 +191,11 @@ var SPNAPI = (function(SPNAPI, $, undefined) {
             }
             if(request[i] instanceof Array ){
                 for(var x in request[i]){
-                    url=url+i+"/"+request[i][x]+"/";
+                    url=url+encodeURI(i)+"/"+encodeURI(request[i][x])+"/";
                 }
                 continue;
             }
-            url=url+i+"/"+request[i]+"/";
+            url=url+encodeURI(i)+"/"+encodeURI(request[i])+"/";
         }
         console.log("Url generated from request:"+url);
         return url;

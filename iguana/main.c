@@ -193,10 +193,9 @@ int32_t iguana_jsonQ()
     }
     if ( (ptr= queue_dequeue(&jsonQ,0)) != 0 )
     {
-        char str[65]; printf("ptr %p %s\n",&ptr->myinfo->privkey,bits256_str(str,ptr->myinfo->privkey));
         if ( *ptr->retjsonstrp != 0 && (*ptr->retjsonstrp= SuperNET_jsonstr(ptr->myinfo,ptr->jsonstr,ptr->remoteaddr)) == 0 )
             *ptr->retjsonstrp = clonestr("{\"error\":\"null return from iguana_jsonstr\"}");
-        //printf("finished.(%s) -> (%s)\n",ptr->jsonstr,*ptr->retjsonstrp!=0?*ptr->retjsonstrp:"null return");
+        printf("finished.(%s) -> (%s)\n",ptr->jsonstr,*ptr->retjsonstrp!=0?*ptr->retjsonstrp:"null return");
         queue_enqueue("finishedQ",&finishedQ,&ptr->DL,0);
         return(1);
     }
@@ -1076,14 +1075,16 @@ void iguana_main(void *arg)
     }
    //iguana_chaingenesis(1,1403138561,0x1e0fffff,8359109,bits256_conv("fd1751cc6963d88feca94c0d01da8883852647a37a0a67ce254d62dd8c9d5b2b")); // BTCD
     //iguana_chaingenesis(1,1409839200,0x1e0fffff,64881664,bits256_conv("698a93a1cacd495a7a4fb3864ad8d06ed4421dedbc57f9aaad733ea53b1b5828")); // VPN
-    char genesisblock[1024];
-    iguana_chaingenesis(genesisblock,"sha256",1,1317972665,0x1e0ffff0,2084524493,bits256_conv("97ddfbbae6be97fd6cdf3e7ca13232a3afff2353e29badfab7f73011edd4ced9")); // LTC
+    //char genesisblock[1024];
+    //iguana_chaingenesis(genesisblock,"sha256",1,1317972665,0x1e0ffff0,2084524493,bits256_conv("97ddfbbae6be97fd6cdf3e7ca13232a3afff2353e29badfab7f73011edd4ced9")); // LTC
 
     iguana_initQ(&helperQ,"helperQ");
     OS_ensure_directory("help");
     OS_ensure_directory("confs");
     OS_ensure_directory("DB"), OS_ensure_directory("DB/ECB");
     OS_ensure_directory("tmp");
+    iguana_coinadd("BTC",0);
+    iguana_coinadd("BTCD",0);
     if ( arg != 0 && (argjson= cJSON_Parse(arg)) != 0 )
     {
         safecopy(Userhome,jstr(argjson,"userhome"),sizeof(Userhome));
@@ -1101,12 +1102,12 @@ void iguana_main(void *arg)
     {
         sprintf(helperstr,"{\"name\":\"helper.%d\"}",i);
         helperargs = clonestr(helperstr);
-        iguana_launch(iguana_coinadd("BTCD"),"iguana_helper",iguana_helper,helperargs,IGUANA_PERMTHREAD);
+        iguana_launch(iguana_coinadd("BTCD",0),"iguana_helper",iguana_helper,helperargs,IGUANA_PERMTHREAD);
     }
-    iguana_launch(iguana_coinadd("BTCD"),"rpcloop",iguana_rpcloop,SuperNET_MYINFO(0),IGUANA_PERMTHREAD);
+    iguana_launch(iguana_coinadd("BTCD",0),"rpcloop",iguana_rpcloop,SuperNET_MYINFO(0),IGUANA_PERMTHREAD);
     category_init(&MYINFO);
     if ( (coinargs= SuperNET_keysinit(&MYINFO,arg)) != 0 )
-        iguana_launch(iguana_coinadd("BTCD"),"iguana_coins",iguana_coins,coinargs,IGUANA_PERMTHREAD);
+        iguana_launch(iguana_coinadd("BTCD",0),"iguana_coins",iguana_coins,coinargs,IGUANA_PERMTHREAD);
     else if ( 1 )
     {
 #ifdef __APPLE__
@@ -1135,6 +1136,27 @@ void iguana_main(void *arg)
     }
     if ( arg != 0 )
         SuperNET_JSON(&MYINFO,cJSON_Parse(arg),0);
+    {
+        int32_t i,n; int64_t total; char *coinaddr; struct iguana_pkhash *P; struct iguana_info *coin; uint8_t rmd160[20],addrtype;
+        coin = iguana_coinfind("BTCD");
+        if ( 1 && coin != 0 )
+        {
+            getchar();
+            for (i=0; i<coin->bundlescount; i++)
+                if ( coin->bundles[i] == 0 )
+                    break;
+            if ( i > 0 )
+                iguana_spentsfile(coin,i);
+            coinaddr = "RUZ9AKxy6J2okcBd1PZm4YH6atmPwqV4bo";
+            bitcoin_addr2rmd160(&addrtype,rmd160,coinaddr);
+            P = calloc(coin->bundlescount,sizeof(*P));
+            n = iguana_pkhasharray(coin,&total,P,coin->bundlescount,rmd160);
+            printf("%s has total outputs %.8f from %d bundles\n",coinaddr,dstr(total),n);
+            n = iguana_pkhasharray(coin,&total,P,coin->bundlescount,rmd160);
+            printf("%s has total outputs %.8f from %d bundles\n",coinaddr,dstr(total),n);
+            getchar();
+        }
+    }
     mainloop(&MYINFO);
 }
 

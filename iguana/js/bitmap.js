@@ -98,5 +98,4 @@ $('#Bitmap_page').on("mousemove","img",function(e){
 	            //}
 	            }
 	  });
-
- });
+});
