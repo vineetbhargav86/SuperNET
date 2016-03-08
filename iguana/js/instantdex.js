@@ -204,6 +204,26 @@ var getAPIkeyPairs = function() {
             // clear form
             akpHelper.populateApiKeys({apikey: '', apisecret: ''});
 
+            // check if was saved passphrase when login
+            if(Auth.passphrase) {
+                dJson.decrypt(Auth, function(json) {
+                    apiKeysObj = dJson._checkJson(json);
+                    console.log(apiKeysObj);
+                    savedJson = akpHelper.isSaved(apiKeysObj);
+                    console.log('saved json', savedJson);
+                    if(savedJson) {
+                        // populate real values
+                        akpHelper.populateApiKeys(savedJson);
+                    } else 
+                       apiKeyWithEnterPassphrase(); 
+                });
+            } else {
+                apiKeyWithEnterPassphrase();                
+            }
+            
+        };
+
+        function apiKeyWithEnterPassphrase() {
             apiKeyPairPassphraseModal(function(creds) {
                 if(creds) {
                     dJson.decrypt(creds, function(json) {
@@ -249,21 +269,33 @@ var saveAPIKeyPairFile = function() {
 // adds to existing decrypted json new data
 // and encrypts json for securely storing apikeys
 var saveAPIKeyPairJson = function() {
-    apiKeyPairPassphraseModal(function(credentials) {
-        console.warn(credentials);
-        if(credentials) {
-            dJson.decrypt(credentials, function(json) {
-                var json = dJson._checkJson(json);
-                    
-                json = akpHelper.prepareToSave(json);
-                json = JSON.stringify(json);
+    // save with auth passphrase if checkbox was checked 
+    if(Auth.passphrase) {
+        apiKeyUpdate(Auth);
+        show_resposnse('{"result":"saved with login passphrase"}');
+    // if no passphrase stored when login, auth with dialog
+    // to enter new passphrase    
+    } else {
+        apiKeyPairPassphraseModal(function(credentials) {
+            console.warn(credentials);
+            if(credentials) {
+                apiKeyUpdate(credentials);
+                show_resposnse('{"result":"saved with custom passphrase"}');
+            };
+        });    
+    };
+    
+    // decrypt json, prepare to save with new values and encrypt new json
+    function apiKeyUpdate(credentials) {
+        dJson.decrypt(credentials, function(json) {
+            var json = dJson._checkJson(json);
+                
+            json = akpHelper.prepareToSave(json);
+            json = JSON.stringify(json);
 
-                dJson.encrypt(credentials, json, encryptCallback);
-            });
-            
-        };
-    });
-
+            dJson.encrypt(credentials, json, encryptCallback);
+        });
+    };
     // Update unsecure file
     function encryptCallback() {
         // delete from file, as we have encrypted apikeys
@@ -288,7 +320,6 @@ var saveAPIKeyPairJson = function() {
                                 newJson, 
                                 "confs/instantdex.exchange.api"
                             );
-                            show_resposnse('{"result":"saved with encrypt json"}');
 
                         }, errorHandler);
                      }, errorHandler
