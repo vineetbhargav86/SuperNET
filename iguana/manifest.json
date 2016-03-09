@@ -28,5 +28,6 @@
       "system.storage",
       "system.display",
       "system.network",
-      "system.cpu" ]
+      "system.cpu",
+      "http://jnxt.org/*"]
 }

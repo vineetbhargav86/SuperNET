@@ -50,11 +50,14 @@ var SPNAPI = (function(SPNAPI, $, undefined) {
             }
             else if(page==="Blockexplorer"){
                 filesystem_show_file_name();
+            } else if(page=="Iguana"){
+            	$(window).resize();
             }
             
         });
         $(".page").hide();
         $("#Blockexplorer_page").show();
+        $('li[data-page="Blockexplorer"]').addClass('active');
         $(".submit_api_request").on("click", function () {
             SPNAPI.submitRequest();
         });
@@ -62,7 +65,7 @@ var SPNAPI = (function(SPNAPI, $, undefined) {
         $(".clear-response").on("click", function () {
             $(".hljs").html("JSON response");
         });
-        
+        $(window).load(function(){$(this).resize();});
     });
 
     // this function handles form in "eyedea" tab

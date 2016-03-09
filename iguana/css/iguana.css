@@ -1,0 +1,36 @@
+.navbar .navbar-header>.active>a, .navbar .navbar-header>.active>a:focus, .navbar .navbar-header>.active>a:hover {
+    color: inherit;
+    background-color: rgba(255,255,255,.1);
+}
+
+#Iguana_page .panel-body{
+	padding:0;
+}
+
+.navbar .navbar-brand {
+    height: 50px;
+}
+
+.navbar-top-links .dropdown-toggle {
+	color: white;
+}
+.navbar-top-links .dropdown>a{
+	background-color: #009688;
+}
+
+.navbar-top-links .dropdown>a:focus, .navbar-top-links .dropdown>a:hover, .navbar-top-links .dropdown>a:active{
+	background-color: rgba(255,255,255,.1);
+}
+
+.input-group.custom-search-form {
+    color: black;
+}
+
+.pull-right{
+	cursor: pointer;
+}
+
+.activeasset {
+    background-color: #DDD !important;
+    font-weight: bold;
+}
