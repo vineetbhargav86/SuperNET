@@ -203,6 +203,18 @@ function getDataFromServer()
 
 </script>
 
+    <!-- MetisMenu CSS -->
+    <link rel="stylesheet" type="text/css" href="css/metisMenu.min.css">
+    <!-- Timeline CSS -->
+    <link rel="stylesheet" type="text/css" href="css/timeline.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="css/sb-admin-2.css">
+    <!-- Morris Charts CSS -->
+    <link rel="stylesheet" type="text/css" href="css/morris.css">
+    <!-- Manual changes -->
+    <link rel="stylesheet" type="text/css" href="css/iguana.css">
+    <!-- Custom Fonts -->
+    <link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 </head>
 
 <body data-custom-load="true" data-name="iguana" data-tools="pnacl newlib glibc clang-newlib mac" data-configs="Debug Release"
@@ -233,7 +245,9 @@ data-path="{tc}/{config}">
                     <!--<a class="navbar-brand" href="#">
                             <img alt="Brand" style="z-index:-1;" src="logo.png" width="25" height="25">
                         </a>-->
-                    <a href="#" class="navbar-brand">Iguana</a>
+                    <div class="navigation" data-page="Iguana">
+                        <a href="#" class="navbar-brand">Iguana</a>
+                    </div>
                 </div>
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse">
@@ -341,7 +355,492 @@ data-path="{tc}/{config}">
                     </div>
                 </div>
             </div>
+          
+    <!-- /#wrapper -->
 
+ <div id="depth_hover" width="100px" style="padding:0;margin:0;position:absolute;">
+        <div class="alert alert-info" style="padding:4px;margin:0">
+            <p><strong>Price:</strong> <span id="hover_price"></span> NXT</p>
+            <p><strong>Total:</strong> <span id="hover_nxt"></span> NXT</p>
+            <p><strong>Total:</strong> <span id="hover_asset"></span> <span class="asset"></span></p>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modal_attach" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modal_attach_title">Attach Account</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="control-label" for="modal_attach_label">Nxt Address</label>
+                    <input type="text" class="form-control input" id="modal_attach_input"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="modal_attach_attach">Attach</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_qr" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modal_attach_title">QR Code</h4>
+            </div>
+            <div class="modal-body">
+                <div class="img-responsive text-center" id="qrzone">
+                </div>
+                <input id="qrtrf" type="text" class="form-control" readonly/>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+                </div>
+            </div>
+
+            <!-- Iguana page -->
+
+              <div id="Iguana_page" class="page">
+                <div class="panel panel-default" id="iguana_page_panel">
+                <div class="panel-heading">
+                	<h3>Iguana tab</h3>
+                </div>
+                    <div class="panel-body">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>-->
+                <a class="navbar-brand" href="index.html">Jay Exchange (Beta)</a>
+                <div class="pull-right" id="minimize"><i id="minimize" style="margin-top: 12px;margin-right:6px;color:white;" class="fa fa-bars fa-2x"></i></div>
+
+
+            </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="">
+                         <span class="address">No Account Attached</span>  <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-messages" id="attach_account">
+                        <li>
+                            <a class="text-center" href="#">
+                                <strong id="attach_text">Attach an Account</strong>
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <!-- /.dropdown-messages -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+                    <ul class="nav pre-scrollable" id="side-menu">
+                        <li class="sidebar-search">
+                            <div class="input-group custom-search-form" style="width: 100%">
+                                <input type="text" class="form-control" id="search" placeholder="Search">
+                                
+                            </div>
+                            <!-- /input-group -->
+                        </li>
+                        <li class="sidebar-search">
+                            <div class="input-group custom-search-form" style="width: 100%">
+                                <strong>NXT Markets  <span class="pull-right"><span class="label label-primary">7d volume</span></span></strong>
+                            </div>
+                            <!-- /input-group -->
+                        </li>
+
+                        <span class="nav" id="side_assets">
+                        </span>
+                        
+                            <!-- /.nav-second-level -->
+                    </ul>
+                </div>
+                <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+
+        <div id="page-wrapper" class="pre-scrollable">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-header">
+                        <h1 style="width: 50% !important;">
+                            <span class="asset" data-toggle='popover' title='Asset Description' data-placement='bottom' data-container="body" style="border-bottom: 1px dotted #000"></span>
+                            /NXT Market
+                        </h1>
+                        <div style="position: relative;bottom: 50px;font-size:10pt;" class="pull-right label label-primary">
+                            Asset Id: 
+                            <strong class="assetid"></strong><br/> 
+                            Issuer:
+                            <strong class="issuer"></strong>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <p class="lead"><strong>24h Volume</strong><br/><span id="vol24"></span></p>
+                </div>
+                <div class="col-md-3">
+                    <p class="lead"><strong>24h Trades</strong><br/><span id="trades24"></span></p>
+                </div>
+                <div class="col-md-3">
+                    <p class="lead"><strong>Bid/Ask Spread</strong><br/><span id="bidask"></span></p>
+                </div>
+                <div class="col-md-3">
+                    <p class="lead"><strong>24h Price Avg.</strong><br/><span id="avg24"></span></p>
+                </div>
+            </div>
+            <!-- /.row -->
+            
+<div class="img-responsize">
+        <div class="row">
+                <svg id="ex_chart" width="1200" height="750" class="noselect" style="display:block;margin: auto;">
+                    <line id="divider2" stroke="black" x1="0" x2="1200" y1="649.5" y2="649.5"/>
+                    <g id="grid_lines">
+                    </g>
+                    <g id="axis">
+                    </g>
+                    <g id="axis_title">
+                        <text x="10" y="20">Volume (NXT)</text>
+                        <text x="1110" y="20" id="pricenxtb">Price (NXT)</text>
+                    </g>
+                    <g id="volbars">
+
+                    </g>
+                    <g id="cursor_follow">
+                        <rect id="backbox_vol"/>
+                        <rect id="backbox_price"/>
+                        <line id="cursor_follow_x" stroke="black" stroke-width="0.5"/>
+                        <line id="cursor_follow_y" stroke="black" stroke-width="0.5"/>
+                        <text id="cursor_follow_vol"></text>
+                        <text id="cursor_follow_price"></text>
+                        
+                    </g>
+                    
+                    
+                    <g id="boxes">
+                    </g>
+                    <g id="bottom_scroll">
+
+                    </g>
+                </svg>
+                            <br/>
+                <div class="adjustments text-center" style="display:block;margin:auto">
+                    Window Span:
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_span" autocomplete="off" value="43200"> 12h
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_span" autocomplete="off" value="86400"> 1d
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_span" autocomplete="off" value="259200"> 3d
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_span" autocomplete="off" value="604800" > 1w
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_span" autocomplete="off" value="1209600"> 2w
+                        </label>
+                        <label class="btn btn-primary active">
+                            <input checked type="radio" name="time_span" autocomplete="off" value="2635200"> 1m
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_span" autocomplete="off" value="7905600"> 3m
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_span" autocomplete="off" value="15811200"> 6m
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_span" autocomplete="off" value="0"> All
+                        </label>
+                    </div>
+
+                    Candlesticks:
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_width" autocomplete="off" value="3600"> 1h
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_width" autocomplete="off" value="10800"> 3h
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_width" autocomplete="off" value="21600" > 6h
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_width" autocomplete="off" value="43200"> 12h
+                        </label>
+                        <label class="btn btn-primary active">
+                            <input checked type="radio" name="time_width" autocomplete="off" value="86400"> 1d
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_width" autocomplete="off" value="259200"> 3d
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_width" autocomplete="off" value="604800"> 1w
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_width" autocomplete="off" value="1209600"> 2w
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="time_width" autocomplete="off" value="2635200"> 1m
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div><br/>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Buy <span class="asset"></span> <small class="pull-right">Your Balance: <strong><span id="buy_rs"></span></strong> NXT</small></h3>
+                <div class="panel panel-success">
+                    <div class="panel-body">
+                        <div class="container-fluid">
+                            <form class="form-horizontal">
+                                <div class="form-group">
+                                    <label for="buy_order_price" class="col-sm-2 control-label">Price</label>
+                                    <div class="col-sm-10">
+                                        <div class="input-group">
+                                            <input id="buy_order_price" type="text" class="form-control">
+                                            <span class="input-group-addon">NXT</span>
+                                        </div>
+                                        <div class="help-block" id="buy_help_price">0 NQT</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="buy_order_amount" class="col-sm-2 control-label">Amount</label>
+                                    <div class="col-sm-10">
+                                        <div class="input-group">
+                                            <input id="buy_order_amount" type="text" class="form-control">
+                                            <span class="input-group-addon asset"></span>
+                                        </div>
+                                        <div class="help-block" id="buy_help_amount">0 QNT</div>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="form-group">
+                                    <label for="buy_order_total" class="col-sm-2 control-label">Total</label>
+                                    <div class="col-sm-10">
+                                        <div class="input-group">
+                                            <input id="buy_order_total" type="text" class="form-control">
+                                            <span class="input-group-addon">NXT</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="buy_order_fee" class="col-sm-2 control-label">Fee</label>
+                                    <div class="col-sm-10">
+                                        <div class="input-group">
+                                            <input id="buy_order_fee" type="text" class="form-control" readonly value="1">
+                                            <span class="input-group-addon">NXT</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <div class="input-group">
+                                            <span class="input-group-btn">
+                                                <button id="buy_qr" class="btn btn-default" type="button"><div class="fa fa-qrcode"></div></button>
+                                            </span>
+                                            <input id="buy_order_trf" type="text" class="form-control" placeholder="TX_ code" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3>Sell <span class="asset"></span> <small class="pull-right">Your Balance: <strong><span id="sell_rs"></span></strong> <span class="asset"></span></small></h3>
+                <div class="panel panel-danger">
+                    <div class="panel-body">
+                        <div class="container-fluid">
+                            <form class="form-horizontal">
+                                <div class="form-group">
+                                    <label for="sell_order_price" class="col-sm-2 control-label">Price</label>
+                                    <div class="col-sm-10">
+                                        <div class="input-group">
+                                            <input id="sell_order_price" type="text" class="form-control">
+                                            <span class="input-group-addon">NXT</span>
+                                        </div>
+                                        <div class="help-block" id="sell_help_price">0 NQT</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="sell_order_amount" class="col-sm-2 control-label">Amount</label>
+                                    <div class="col-sm-10">
+                                        <div class="input-group">
+                                            <input id="sell_order_amount" type="text" class="form-control">
+                                            <span class="input-group-addon asset"></span>
+                                        </div>
+                                        <div class="help-block" id="sell_help_amount">0 QNT</div>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="form-group">
+                                    <label for="sell_order_total" class="col-sm-2 control-label">Total</label>
+                                    <div class="col-sm-10">
+                                        <div class="input-group">
+                                            <input id="sell_order_total" type="text" class="form-control">
+                                            <span class="input-group-addon">NXT</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="sell_order_fee" class="col-sm-2 control-label">Fee</label>
+                                    <div class="col-sm-10">
+                                        <div class="input-group">
+                                            <input id="sell_order_fee" type="text" class="form-control" readonly value="1">
+                                            <span class="input-group-addon">NXT</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <div class="input-group">
+                                            <span class="input-group-btn">
+                                                <button id="sell_qr" class="btn btn-default" type="button"><div class="fa fa-qrcode"></div></button>
+                                            </span>
+                                            <input id="sell_order_trf" type="text" class="form-control" placeholder="TX_ code" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Sell Orders (<span id="sell_orders_count"></span>)<small class="pull-right">Total: <strong><span id="sell_orders_depth"></span></strong> NXT</small></h3>
+                <div class="fixed_height" style="overflow: auto;height:400px;width:100%;">
+                    <table id="sell_orders_table" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>?</th>
+                                <th>Price</th>
+                                <th><span class="asset"></span></th>
+                                <th>NXT</th>
+                                <th>Sum (NXT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3>Buy Orders (<span id="buy_orders_count"></span>) <small class="pull-right"> Total: <strong><span id="buy_orders_depth"></span></strong> <span class="asset"></span></small></h3>
+                <div class="fixed_height" style="overflow: auto; height: 400px;width:100%;">
+                    <table id="buy_orders_table" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>?</th>
+                                <th>Price</th>
+                                <th><span class="asset"></span></th>
+                                <th>NXT</th>
+                                <th>Sum (NXT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Market Depth</h3>
+                <svg id="depth" width="1200" height="300" class="noselect" style="display:block;margin:auto;">
+                    <g id="outline">
+
+                    </g>
+
+                    <text x="10" y="20">Total (NXT)</text>
+                    <text x="1120" y="294" id="pricenxt">Price (NXT)</text>
+
+                    <g id="depthlines">
+                    </g>
+                    <g id="xaxis">
+                    </g>
+                    <g id="yaxis">
+                    </g>
+                    <g id="depthdots">
+                    </g>
+
+                    <g id="cursor">
+                        <circle id="depth_circle" r="4" fill="black"/>
+                        <line id="depth_bar" stroke-width="1" stroke="black"/>
+                    </g>
+                </svg>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Trade History</h3>
+                <div class="fixed_height" style="overflow: auto;height:340px;">
+                    <table id="trade_history_table" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>?</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Price (NXT)</th>
+                                <th>Amount (<span class="asset"></span>)</th>
+                                <th>Total (NXT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+<br/>
+<footer>
+        <div class="footer">
+            <p class="text-center">
+                Jay Framework, 2015
+            </p>
+        </div>
+    </footer>
+
+    </div>
+
+</div>
+
+
+
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
 
             <!--Coin Management Starts-->
             <div id="Coins_page" class="page">
@@ -895,16 +1394,24 @@ data-path="{tc}/{config}">
 
     <!--Bootstrap-->
     <script type="text/javascript" src="js/bootstrap.js"></script>
-
-
+    <!-- Metis Menu Plagin -->
+    <script type="text/javascript" src="js/metisMenu.js"></script>
+    <!-- D3.js -->
+    <script type="text/javascript" src="js/d3.min.js"></script>
+    <script type="text/javascript" src="js/jay.min.js"></script>
+    <!-- Custom Theme -->
+    <script type="text/javascript" src="js/sb-admin-2.js"></script>
     <!--Google Theme-->
     <script type="text/javascript" src='js/googleTheme.min.js'></script>
     <script type="text/javascript" src='js/ripples.min.js'></script>
     <script type="text/javascript" src='js/jquery.dropdown.js'></script>
 
     <!--Iguana genric code-->
+
         <script type="text/javascript" src="js/api.js" " charset="utf-8 "></script>
         <script type="text/javascript " src="js/login.js "></script>
+        <script type="text/javascript" src="js/main_page.js" charset="utf-8"></script>
+
         <script src="app/coin_mgmt.js "></script>
         <script type="text/javascript " src="js/util.js "></script>
         <script type="text/javascript " src="js/sites.js "  charset="utf-8 "></script>
