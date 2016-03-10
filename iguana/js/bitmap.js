@@ -38,9 +38,8 @@ $(window).bind('resize',function(){
 var prevXY={"X":0,"Y":0};
 var prevID=0;
 $(document).ready(function() {
-$('#Bitmap_page').on("click","img",function(e){
-	
-      e = window.event ? event.srcElement : e.target;
+$('#Bitmap_page, #Blockexplorer_page').on("click","img",function(e){
+	    e = window.event ? event.srcElement : e.target;
       var imagename=e.getAttribute('name');
       console.log("Clicked on image"+ imagename);
       
@@ -60,7 +59,7 @@ $('#Bitmap_page').on("click","img",function(e){
 
 
 
-$('#Bitmap_page').on("mousemove","img",function(e){
+$('#Bitmap_page, #Blockexplorer_page').on("mousemove","img",function(e){
      
       var imagename=document.getElementById('bitmapImg').name;
       
