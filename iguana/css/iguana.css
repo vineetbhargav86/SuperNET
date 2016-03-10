@@ -26,11 +26,35 @@
     color: black;
 }
 
-.pull-right{
-	cursor: pointer;
-}
-
 .activeasset {
     background-color: #DDD !important;
     font-weight: bold;
 }
+
+.navbar .navbar-default.sidebar{
+    margin-top:0;
+}
+
+nav.navbar.navbar-default.navbar-static-top {
+    background-color: transparent;
+    margin-bottom: -10px;
+}
+
+li.sidebar-search{
+    margin-top: 40px;
+}
+
+#minimize{
+    position: absolute;
+    left: 5px;
+    top: -3px;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+@media(min-width:768px) {
+    nav.navbar.navbar-default.navbar-static-top {
+    margin-bottom: -50px;
+}
+}
+
