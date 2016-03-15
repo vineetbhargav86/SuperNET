@@ -1,9 +1,4 @@
-.navbar .navbar-header>.active>a, .navbar .navbar-header>.active>a:focus, .navbar .navbar-header>.active>a:hover {
-    color: inherit;
-    background-color: rgba(255,255,255,.1);
-}
-
-#Iguana_page .panel-body{
+#AE_page .panel-body{
 	padding:0;
 }
 
@@ -50,6 +45,60 @@ li.sidebar-search{
     top: -3px;
     z-index: 1000;
     cursor: pointer;
+}
+
+#stockchart{
+	width		: 100%;
+	height		: 500px;
+}
+
+.nxt-market-chart{
+	    padding: 10px;
+        padding-bottom: 28px;
+    border-radius: 10px;
+    background-color: black;
+}
+
+#stockchart .amChartsPeriodSelector {
+  padding-left: 35px;
+  color:white;
+}
+.amChartsButtonSelected {
+  font-weight: bold;
+}
+.amChartsButton.amcharts-period-input {
+  color: #fff;
+  background: transparent;
+  opacity: 0.7;
+  border: 1px solid rgba(255,255,2555,.3);
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  margin: 1px;
+  outline: none;
+  box-sizing: border-box;
+}
+.amChartsInputField {
+  color: #000;
+}   
+
+#chartdepth {
+	width		: 105%;
+	height		: 500px;
+	font-size	: 11px;
+}					
+
+/*
+.amChartsPeriodSelector.amcharts-period-selector-div{
+	color:white;
+}
+
+.amChartsPeriodSelector .amChartsInputField{
+	color:black;
+}
+*/
+
+#AE_page .pre-scrollable{
+  overflow-x: hidden;
 }
 
 @media(min-width:768px) {
